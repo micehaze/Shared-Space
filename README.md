@@ -1,4 +1,4 @@
-# Vice Space — Android app
+# SharedSpace — Android app
 
 A private space for two, kept on one phone: shared inbox, gallery, document locker,
 notepad (with photos and coloured text), contacts, special dates and calculated

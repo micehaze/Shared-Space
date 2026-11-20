@@ -1,0 +1,15 @@
+rules_version = '2';
+// Enko — photos and documents, members only, 20 MB per file.
+// Paste into Firebase console → Storage → Rules → Publish.
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isMember() {
+      return request.auth != null
+        && request.auth.uid in firestore.get(/databases/(default)/documents/space/members).data.ids;
+    }
+    match /enko/{file} {
+      allow read, delete: if isMember();
+      allow create, update: if isMember() && request.resource.size < 20 * 1024 * 1024;
+    }
+  }
+}

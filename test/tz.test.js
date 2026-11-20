@@ -1,0 +1,12 @@
+const TZ = require('../src/tz.js');
+const show = (label, local, tz) => { const r = TZ.localToUtc(local, tz); const o = r.status === 'ok' ? [r] : r.options; console.log(label.padEnd(44), r.status.padEnd(8), o.map((x) => TZ.fmtOffset(x.offsetSec) + ' → ' + new Date(x.utcMs).toISOString().slice(0, 16)).join(' | ')); return r; };
+show('Vilnius 1999-05-14 07:25', { y: 1999, m: 5, d: 14, h: 7, mi: 25 }, 'Europe/Vilnius');
+show('Moscow 1999-05-14 07:25', { y: 1999, m: 5, d: 14, h: 7, mi: 25 }, 'Europe/Moscow');
+show('Moscow 2012-07-01 12:00 (MSK+4 era)', { y: 2012, m: 7, d: 1, h: 12 }, 'Europe/Moscow');
+show('Moscow 2016-07-01 12:00', { y: 2016, m: 7, d: 1, h: 12 }, 'Europe/Moscow');
+show('Vilnius 2024-03-31 03:30 (spring gap)', { y: 2024, m: 3, d: 31, h: 3, mi: 30 }, 'Europe/Vilnius');
+show('Vilnius 2024-10-27 03:30 (autumn overlap)', { y: 2024, m: 10, d: 27, h: 3, mi: 30 }, 'Europe/Vilnius');
+show('Kolkata 1945-08-15 00:00 (war time)', { y: 1945, m: 8, d: 15, h: 0 }, 'Asia/Kolkata');
+show('Kolkata 1990-01-01 05:42', { y: 1990, m: 1, d: 1, h: 5, mi: 42 }, 'Asia/Kolkata');
+show('Vilnius 1890-06-01 12:00 (LMT)', { y: 1890, m: 6, d: 1, h: 12 }, 'Europe/Vilnius');
+show('New York 1985-04-28 02:30 (gap)', { y: 1985, m: 4, d: 28, h: 2, mi: 30 }, 'America/New_York');

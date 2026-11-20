@@ -1,0 +1,59 @@
+plugins {
+    id 'com.android.application'
+}
+
+def ks = System.getenv('ENKO_KEYSTORE')   // secret names kept from the first setup
+def hasKey = ks != null && new File(ks).exists()
+
+android {
+    namespace 'app.vicespace'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId 'app.vicespace'
+        minSdk 29          // Android 10+
+        targetSdk 36       // Google Play requirement for new apps (Android 16)
+        versionCode((System.getenv('GITHUB_RUN_NUMBER') ?: '1').toInteger())
+        versionName '1.0.' + (System.getenv('GITHUB_RUN_NUMBER') ?: '0')
+    }
+
+    signingConfigs {
+        if (hasKey) {
+            release {
+                storeFile file(ks)
+                storePassword System.getenv('ENKO_STORE_PASSWORD')
+                keyAlias System.getenv('ENKO_KEY_ALIAS')
+                keyPassword System.getenv('ENKO_KEY_PASSWORD')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (hasKey) signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.webkit:webkit:1.11.0'
+}
+configurations.configureEach {
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == "org.jetbrains.kotlin" &&
+                details.requested.name in [
+                "kotlin-stdlib",
+                "kotlin-stdlib-jdk7",
+                "kotlin-stdlib-jdk8"
+        ]) {
+            details.useVersion "1.8.22"
+        }
+    }
+}

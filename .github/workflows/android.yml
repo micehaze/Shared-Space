@@ -1,0 +1,88 @@
+name: Build Vice Space for Android
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build the app into the Android assets
+        run: node build.mjs --android
+
+      - name: Bundle libraries and the logo font (the app then works fully offline)
+        run: |
+          V=android/app/src/main/assets/www/vendor
+          mkdir -p "$V/images"
+          curl -fsSL https://cdn.jsdelivr.net/npm/@fontsource/mr-dafoe@5/files/mr-dafoe-latin-400-normal.woff2 -o "$V/mr-dafoe.woff2" \
+            || echo "::warning::Logo font not bundled; it will load online instead"
+          curl -fsSL https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js -o "$V/astronomy.browser.min.js" \
+            || echo "::warning::Astronomy Engine not bundled; the app uses its built-in chart engine"
+          curl -fsSL https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js -o "$V/leaflet.js" || true
+          curl -fsSL https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css -o "$V/leaflet.css" || true
+          for i in marker-icon.png marker-icon-2x.png marker-shadow.png; do
+            curl -fsSL "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/$i" -o "$V/images/$i" || true
+          done
+          ls -la "$V"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.14.3
+
+      - name: Prepare signing key (optional)
+        id: sign
+        env:
+          KEY_B64: ${{ secrets.ENKO_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KEY_B64" ]; then
+            echo "$KEY_B64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+            echo "ENKO_KEYSTORE=$RUNNER_TEMP/upload.jks" >> "$GITHUB_ENV"
+            echo "signed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::No signing secrets set — building an installable debug APK. Add the secrets later for a Google Play build."
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build signed APK + Google Play bundle
+        if: steps.sign.outputs.signed == 'true'
+        working-directory: android
+        env:
+          ENKO_STORE_PASSWORD: ${{ secrets.ENKO_STORE_PASSWORD }}
+          ENKO_KEY_ALIAS: ${{ secrets.ENKO_KEY_ALIAS }}
+          ENKO_KEY_PASSWORD: ${{ secrets.ENKO_KEY_PASSWORD }}
+        run: gradle --no-daemon :app:assembleRelease :app:bundleRelease
+
+      - name: Build installable debug APK
+        if: steps.sign.outputs.signed != 'true'
+        working-directory: android
+        run: gradle --no-daemon :app:assembleDebug
+
+      - name: Collect outputs
+        run: |
+          mkdir -p out
+          find android/app/build/outputs -name "*.apk" -exec cp {} out/ \;
+          find android/app/build/outputs -name "*.aab" -exec cp {} out/ \; || true
+          cd out && for f in *; do mv "$f" "ViceSpace-${GITHUB_RUN_NUMBER}-$f"; done; ls -la
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ViceSpace-android-${{ github.run_number }}
+          path: out/*
+          retention-days: 30

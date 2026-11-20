@@ -1,0 +1,137 @@
+Mumbai|Maharashtra|IN|19.0760|72.8777
+Delhi|Delhi|IN|28.6139|77.2090
+New Delhi|Delhi|IN|28.6129|77.2295
+Bengaluru|Karnataka|IN|12.9716|77.5946
+Kolkata|West Bengal|IN|22.5726|88.3639
+Chennai|Tamil Nadu|IN|13.0827|80.2707
+Hyderabad|Telangana|IN|17.3850|78.4867
+Pune|Maharashtra|IN|18.5204|73.8567
+Ahmedabad|Gujarat|IN|23.0225|72.5714
+Jaipur|Rajasthan|IN|26.9124|75.7873
+Lucknow|Uttar Pradesh|IN|26.8467|80.9462
+Kanpur|Uttar Pradesh|IN|26.4499|80.3319
+Nagpur|Maharashtra|IN|21.1458|79.0882
+Indore|Madhya Pradesh|IN|22.7196|75.8577
+Bhopal|Madhya Pradesh|IN|23.2599|77.4126
+Patna|Bihar|IN|25.5941|85.1376
+Vadodara|Gujarat|IN|22.3072|73.1812
+Surat|Gujarat|IN|21.1702|72.8311
+Rajkot|Gujarat|IN|22.3039|70.8022
+Ludhiana|Punjab|IN|30.9010|75.8573
+Amritsar|Punjab|IN|31.6340|74.8723
+Chandigarh|Chandigarh|IN|30.7333|76.7794
+Agra|Uttar Pradesh|IN|27.1767|78.0081
+Varanasi|Uttar Pradesh|IN|25.3176|82.9739
+Prayagraj|Uttar Pradesh|IN|25.4358|81.8463
+Meerut|Uttar Pradesh|IN|28.9845|77.7064
+Noida|Uttar Pradesh|IN|28.5355|77.3910
+Gurugram|Haryana|IN|28.4595|77.0266
+Dehradun|Uttarakhand|IN|30.3165|78.0322
+Haridwar|Uttarakhand|IN|29.9457|78.1642
+Shimla|Himachal Pradesh|IN|31.1048|77.1734
+Srinagar|Jammu and Kashmir|IN|34.0837|74.7973
+Jammu|Jammu and Kashmir|IN|32.7266|74.8570
+Guwahati|Assam|IN|26.1445|91.7362
+Bhubaneswar|Odisha|IN|20.2961|85.8245
+Cuttack|Odisha|IN|20.4625|85.8830
+Ranchi|Jharkhand|IN|23.3441|85.3096
+Jamshedpur|Jharkhand|IN|22.8046|86.2029
+Raipur|Chhattisgarh|IN|21.2514|81.6296
+Visakhapatnam|Andhra Pradesh|IN|17.6868|83.2185
+Vijayawada|Andhra Pradesh|IN|16.5062|80.6480
+Tirupati|Andhra Pradesh|IN|13.6288|79.4192
+Coimbatore|Tamil Nadu|IN|11.0168|76.9558
+Madurai|Tamil Nadu|IN|9.9252|78.1198
+Tiruchirappalli|Tamil Nadu|IN|10.7905|78.7047
+Kochi|Kerala|IN|9.9312|76.2673
+Thiruvananthapuram|Kerala|IN|8.5241|76.9366
+Kozhikode|Kerala|IN|11.2588|75.7804
+Mysuru|Karnataka|IN|12.2958|76.6394
+Mangaluru|Karnataka|IN|12.9141|74.8560
+Hubballi|Karnataka|IN|15.3647|75.1240
+Panaji|Goa|IN|15.4909|73.8278
+Nashik|Maharashtra|IN|19.9975|73.7898
+Aurangabad|Maharashtra|IN|19.8762|75.3433
+Thane|Maharashtra|IN|19.2183|72.9781
+Kolhapur|Maharashtra|IN|16.7050|74.2433
+Udaipur|Rajasthan|IN|24.5854|73.7125
+Jodhpur|Rajasthan|IN|26.2389|73.0243
+Ajmer|Rajasthan|IN|26.4499|74.6399
+Kota|Rajasthan|IN|25.2138|75.8648
+Gwalior|Madhya Pradesh|IN|26.2183|78.1828
+Jabalpur|Madhya Pradesh|IN|23.1815|79.9864
+Ujjain|Madhya Pradesh|IN|23.1765|75.7885
+Gorakhpur|Uttar Pradesh|IN|26.7606|83.3732
+Ayodhya|Uttar Pradesh|IN|26.7922|82.1998
+Mathura|Uttar Pradesh|IN|27.4924|77.6737
+Siliguri|West Bengal|IN|26.7271|88.3953
+Darjeeling|West Bengal|IN|27.0410|88.2663
+Imphal|Manipur|IN|24.8170|93.9368
+Shillong|Meghalaya|IN|25.5788|91.8933
+Puducherry|Puducherry|IN|11.9416|79.8083
+Kathmandu|Bagmati|NP|27.7172|85.3240
+Dhaka|Dhaka|BD|23.8103|90.4125
+Karachi|Sindh|PK|24.8607|67.0011
+Lahore|Punjab|PK|31.5204|74.3587
+Islamabad|Islamabad|PK|33.6844|73.0479
+Colombo|Western|LK|6.9271|79.8612
+Dubai|Dubai|AE|25.2048|55.2708
+Abu Dhabi|Abu Dhabi|AE|24.4539|54.3773
+Doha|Doha|QA|25.2854|51.5310
+Riyadh|Riyadh|SA|24.7136|46.6753
+Muscat|Muscat|OM|23.5880|58.3829
+Singapore|Singapore|SG|1.3521|103.8198
+Kuala Lumpur|Kuala Lumpur|MY|3.1390|101.6869
+Bangkok|Bangkok|TH|13.7563|100.5018
+Jakarta|Jakarta|ID|-6.2088|106.8456
+Hong Kong|Hong Kong|HK|22.3193|114.1694
+Shanghai|Shanghai|CN|31.2304|121.4737
+Beijing|Beijing|CN|39.9042|116.4074
+Tokyo|Tokyo|JP|35.6762|139.6503
+Seoul|Seoul|KR|37.5665|126.9780
+Sydney|New South Wales|AU|-33.8688|151.2093
+Melbourne|Victoria|AU|-37.8136|144.9631
+Perth|Western Australia|AU|-31.9505|115.8605
+Auckland|Auckland|NZ|-36.8485|174.7633
+London|England|GB|51.5074|-0.1278
+Manchester|England|GB|53.4808|-2.2426
+Leicester|England|GB|52.6369|-1.1398
+Birmingham|England|GB|52.4862|-1.8904
+Paris|Île-de-France|FR|48.8566|2.3522
+Berlin|Berlin|DE|52.5200|13.4050
+Frankfurt|Hesse|DE|50.1109|8.6821
+Amsterdam|North Holland|NL|52.3676|4.9041
+Rome|Lazio|IT|41.9028|12.4964
+Madrid|Madrid|ES|40.4168|-3.7038
+Lisbon|Lisbon|PT|38.7223|-9.1393
+Warsaw|Masovia|PL|52.2297|21.0122
+Kaunas|Kaunas County|LT|54.8985|23.9036
+Klaipėda|Klaipėda County|LT|55.7033|21.1443
+Riga|Riga|LV|56.9496|24.1052
+Tallinn|Harju|EE|59.4370|24.7536
+Minsk|Minsk|BY|53.9006|27.5590
+Kyiv|Kyiv|UA|50.4501|30.5234
+Saint Petersburg|Saint Petersburg|RU|59.9311|30.3609
+Kazan|Tatarstan|RU|55.7963|49.1088
+Nizhny Novgorod|Nizhny Novgorod Oblast|RU|56.2965|43.9361
+Sochi|Krasnodar Krai|RU|43.6028|39.7342
+Istanbul|Istanbul|TR|41.0082|28.9784
+Stockholm|Stockholm|SE|59.3293|18.0686
+Helsinki|Uusimaa|FI|60.1699|24.9384
+Zurich|Zurich|CH|47.3769|8.5417
+Vienna|Vienna|AT|48.2082|16.3738
+Prague|Prague|CZ|50.0755|14.4378
+Cairo|Cairo|EG|30.0444|31.2357
+Nairobi|Nairobi|KE|-1.2921|36.8219
+Johannesburg|Gauteng|ZA|-26.2041|28.0473
+Lagos|Lagos|NG|6.5244|3.3792
+New York|New York|US|40.7128|-74.0060
+Los Angeles|California|US|34.0522|-118.2437
+San Francisco|California|US|37.7749|-122.4194
+Chicago|Illinois|US|41.8781|-87.6298
+Houston|Texas|US|29.7604|-95.3698
+Toronto|Ontario|CA|43.6532|-79.3832
+Vancouver|British Columbia|CA|49.2827|-123.1207
+Mexico City|Mexico City|MX|19.4326|-99.1332
+São Paulo|São Paulo|BR|-23.5505|-46.6333
+Buenos Aires|Buenos Aires|AR|-34.6037|-58.3816

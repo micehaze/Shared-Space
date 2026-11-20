@@ -1,0 +1,42 @@
+rules_version = '2';
+// Enko — only the two members can read or write the space.
+// Paste into Firebase console → Firestore Database → Rules → Publish.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function membersDoc() { return get(/databases/$(database)/documents/space/members); }
+    function isMember() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/space/members)
+        && request.auth.uid in membersDoc().data.ids;
+    }
+
+    match /space/members {
+      // Any signed-in user may read it, so a third person sees "this space is full".
+      allow read: if signedIn();
+      // The very first person creates it with only themselves.
+      allow create: if signedIn() && request.resource.data.ids == [request.auth.uid];
+      allow update: if signedIn() && (
+        // members edit names but can't change who is a member…
+        (isMember() && request.resource.data.ids == resource.data.ids)
+        // …or remove only themselves (account deletion)
+        || (isMember() && request.resource.data.ids == resource.data.ids.removeAll([request.auth.uid]))
+        // a newcomer may take the second seat while one is free
+        || (!(request.auth.uid in resource.data.ids)
+            && resource.data.ids.size() < 2
+            && request.resource.data.ids == resource.data.ids.concat([request.auth.uid]))
+      );
+      allow delete: if false;
+    }
+
+    // Private notes, files, preferences and private Kundali: owner only.
+    match /data/users/{uid}/{rest=**} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+    }
+
+    // Everything shared: inbox, photos, lockers, notes, contacts, dates, profiles, events.
+    match /{coll}/{rest=**} {
+      allow read, write: if isMember() && coll != 'space' && coll != 'data';
+    }
+  }
+}

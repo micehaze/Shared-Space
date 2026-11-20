@@ -2,10 +2,15 @@
 ⬇️ Download SharedSpace VICE v2.0.0
 
 What's new in v2.0.0
+
 Jyotish and European astrology maps
+
 User pairing mechanism
+
 Android build improvement
+
 [⬇️ Download SharedSpace VICE v2.0.0 APK](https://github.com/micehaze/Shared-Space/releases/download/v2.0.0/app-debug.apk)
+
 Download the APK from the Assets section of the release.
 
 A private space for two, kept on one phone: shared inbox, gallery, document locker,

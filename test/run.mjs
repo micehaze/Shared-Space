@@ -1,5 +1,6 @@
 // Headless Chrome walkthrough in demo (local) mode
 import { createRequire } from 'node:module';
+import { asPerson } from './pin-helper.mjs';
 import http from 'node:http';
 import { readFileSync, mkdirSync } from 'node:fs';
 const require = createRequire('/opt/npm-tools/node_modules/');
@@ -43,7 +44,7 @@ await shot(p, '03-phone-saved');
 console.log('A messages:', await p.$$eval('.msg', (e) => e.length), 'state:', await p.$eval('.msg.mine:last-child .state', (e) => e.textContent).catch(() => '-'));
 
 // switch to B (same browser storage)
-await p.click('.demo-bar [data-p="B"]');
+await asPerson(p, 'B');
 await p.waitForSelector('#draft');
 await p.waitForTimeout(700);
 await p.fill('#draft', 'Yes! 8 works. ✨');
@@ -53,7 +54,7 @@ await shot(p, '04-phone-B-view');
 console.log('B sees:', await p.$$eval('.msg', (e) => e.map((x) => (x.classList.contains('mine') ? 'mine:' : 'theirs:') + x.querySelector('.bubble').textContent.slice(0, 20))));
 
 // back to A: unread divider
-await p.click('.demo-bar [data-p="A"]');
+await asPerson(p, 'A');
 await p.waitForSelector('#draft');
 await p.waitForTimeout(800);
 console.log('A new-sep:', !!(await p.$('#newSep')));
@@ -172,20 +173,19 @@ await shot(d, '22-desk-search');
 await d.goto(base + '#notepad'); await d.waitForTimeout(400);
 await d.click('.note-card');
 await d.waitForTimeout(200);
-await d.fill('#nb', 'B is editing this…');
-// simulate A saving a newer revision underneath
-await d.evaluate(() => {
-  const db = JSON.parse(localStorage.getItem('oss.db.v1'));
-  const k = Object.keys(db).find((x) => x.startsWith('notes/'));
-  db[k].rev += 1; db[k].body = 'A changed it'; db[k].editedSeat = 'A'; db[k].editedAt = Date.now();
-  localStorage.setItem('oss.db.v1', JSON.stringify(db));
-  window.dispatchEvent(new StorageEvent('storage', { key: 'oss.db.v1', newValue: JSON.stringify(db) }));
-});
-await d.waitForTimeout(300);
-await d.click('#nsave');
-await d.waitForTimeout(500);
-await shot(d, '23-desk-conflict');
-console.log('conflict dialog:', !!(await d.$('.modal [data-a="mine"]')));
+// ---------- ownership: B opens A's note — read-only, can only save a copy ----------
+const roTxt = await d.$eval('#nbanner', (e) => e.innerText);
+const editable = await d.$eval('#nb', (e) => e.isContentEditable);
+const saveLbl = await d.$eval('#nsave', (e) => e.textContent.trim());
+console.log('partner note read-only:', /Written by/.test(roTxt) && !editable && /copy as mine/.test(saveLbl) ? 'yes' : 'NO', '|', saveLbl);
+if (editable || !/copy as mine/.test(saveLbl)) errors.push('partner note is editable');
+const nBefore = await d.$$eval('.note-card', (a) => a.length);
+await d.click('#nsave'); await d.waitForTimeout(600);
+await d.goto(base + '#notepad'); await d.waitForTimeout(400);
+const nAfter = await d.$$eval('.note-card', (a) => a.length);
+console.log('copy saved as mine:', nAfter === nBefore + 1 ? 'yes' : 'NO', nBefore, '→', nAfter);
+if (nAfter !== nBefore + 1) errors.push('copy not saved');
+await shot(d, '23-desk-readonly');
 
 console.log('ERRORS:', errors.length ? errors : 'none');
 await browser.close(); srv.close();

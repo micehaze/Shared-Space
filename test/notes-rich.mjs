@@ -1,5 +1,6 @@
 // Phone-only first run (Android build) + rich notes: colour and photo
 import { createRequire } from 'node:module';
+import { asPerson } from './pin-helper.mjs';
 import http from 'node:http';
 import { readFileSync, mkdirSync } from 'node:fs';
 const require = createRequire('/opt/npm-tools/node_modules/');
@@ -16,13 +17,13 @@ const W = (ms) => p.waitForTimeout(ms);
 const shot = (n) => p.screenshot({ path: `/home/claude/app/shots4/${n}.png` });
 await p.goto('http://localhost:5185/');
 await p.waitForSelector('#setupForm'); await shot('01-setup');
-await p.fill('#setupForm [name=a]', 'Anya'); await p.fill('#setupForm [name=b]', 'Rohan'); await p.click('#setupForm button');
+await p.fill('#setupForm [name=a]', 'Anya'); await p.fill('#setupForm [name=pin]', '1111'); await p.fill('#setupForm [name=b]', 'Rohan'); await p.click('#setupForm button');
 await p.waitForSelector('#draft'); await W(400);
 console.log('who bar:', await p.$eval('.demo-bar', (e) => e.innerText.replace(/\s+/g, ' ')));
 await p.fill('#draft', 'Hi from the phone-only app'); await p.click('#sendBtn'); await W(400);
 await shot('02-inbox');
 // switch writer
-await p.click('.demo-bar [data-p="B"]'); await p.waitForSelector('#draft'); await W(500);
+await asPerson(p, 'B'); await p.waitForSelector('#draft'); await W(500);
 console.log('after switch:', await p.$eval('.demo-bar [aria-pressed="true"]', (e) => e.textContent), '|', await p.$$eval('.msg .meta b', (b) => b.map((x) => x.textContent)));
 // rich note
 await p.goto('http://localhost:5185/#notepad'); await W(300);

@@ -7,9 +7,11 @@ const src = (f) => readFileSync(new URL('./src/' + f, import.meta.url), 'utf8');
 const font = (f) => readFileSync(new URL('./src/fonts/' + f, import.meta.url)).toString('base64');
 // DejaVu Sans (Bitstream Vera licence, redistributable): a Verdana-like 2000s UI face, embedded so the APK looks right offline
 const FONTS = `@font-face{font-family:'Vice Sans';src:url(data:font/woff;base64,${font('dejavu.woff')}) format('woff');font-weight:400;font-display:swap}
-@font-face{font-family:'Vice Sans';src:url(data:font/woff;base64,${font('dejavu-bold.woff')}) format('woff');font-weight:700;font-display:swap}`;
-const order = ['store.js', 'firebase-store.js', 'core.js', 'scenes.js', 'boot.js', 'dates.js', 'inbox.js', 'gallery.js', 'locker.js', 'notes.js', 'contacts.js', 'geodata.js', 'tz.js', 'astro.js', 'places.js', 'jyotish.js', 'kundli.js', 'kundli-more.js', 'account.js'];
-const js = order.map(src).join('\n') + '\nboot();\n';
+@font-face{font-family:'Vice Sans';src:url(data:font/woff;base64,${font('dejavu-bold.woff')}) format('woff');font-weight:700;font-display:swap}
+@font-face{font-family:'Vice Glyphs';src:url(data:font/woff;base64,${font('glyphs.woff')}) format('woff');unicode-range:U+2609,U+263D-263F,U+2640,U+2642-2647,U+260A-260D,U+26B8,U+2297,U+25B3,U+25A1,U+2220,U+211E,U+2648-2653;font-display:block}
+@font-face{font-family:'Vice Glyphs';src:url(data:font/woff;base64,${font('glyphs2.woff')}) format('woff');unicode-range:U+26B9-26BC;font-display:block}`;
+const order = ['store.js', 'firebase-store.js', 'core.js', 'scenes.js', 'pin.js', 'boot.js', 'dates.js', 'inbox.js', 'gallery.js', 'locker.js', 'notes.js', 'contacts.js', 'geodata.js', 'tz.js', 'astro.js', 'places.js', 'jyotish.js', 'jyotish-deep.js', 'western.js', 'wkb.js', 'wkb-deep.js', 'life.js', 'wheel.js', 'kundli.js', 'kundli-more.js', 'natal-view.js', 'account.js'];
+const js = `window.VS_GLYPHS='${font('glyphs.woff')}';\n` + order.map(src).join('\n') + '\nboot();\n';
 const target = process.argv.includes('--android') ? 'android' : process.argv.includes('--pwa') ? 'pwa' : 'dist';
 let pre = '', head = '';
 if (target === 'pwa') {

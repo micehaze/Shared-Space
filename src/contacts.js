@@ -37,9 +37,10 @@ VIEWS.contacts = {
 function openContact(c) {
   const x = c || { category: 'Family', dates: [] };
   const dateRow = (d = {}) => `<div class="row cdate" style="gap:8px;margin-bottom:8px"><input class="input" style="flex:2 1 140px" placeholder="e.g. Birthday" value="${esc(d.label || '')}" aria-label="Date label"><input class="input" type="date" style="flex:1 1 140px" value="${esc(d.date || '')}" aria-label="Date"><button type="button" class="icon-btn" data-rmd aria-label="Remove date">${icon('close')}</button></div>`;
+  const ro = !!(c && c.seat && c.seat !== S.me.seat);
   openModal({
     title: c ? c.name : 'Add contact',
-    body: `<form id="cf">
+    body: `<form id="cf"><fieldset class="ro-fs" ${ro ? 'disabled' : ''}>
       <label class="field"><span>Name</span><input name="name" required maxlength="120" value="${esc(x.name || '')}"></label>
       <div class="row"><label class="field"><span>Relationship</span><input name="relation" maxlength="80" value="${esc(x.relation || '')}" placeholder="e.g. Maya’s sister"></label>
       <label class="field"><span>Category</span><select name="category">${CONTACT_CATS.map((k) => `<option ${k === x.category ? 'selected' : ''}>${k}</option>`).join('')}</select></label></div>
@@ -50,11 +51,12 @@ function openContact(c) {
       <div class="lbl" style="margin-bottom:8px">Important dates</div><div id="cdates">${(x.dates || []).map(dateRow).join('')}</div>
       <button type="button" class="btn ghost sm" id="addD" style="margin-bottom:14px">${icon('plus')}Add a date</button>
       <label class="field"><span>Notes</span><textarea name="notes" maxlength="2000">${esc(x.notes || '')}</textarea></label>
-      ${c ? `<p class="hint">Added by ${esc(nameOf(c.seat))} · ${esc(fmtStamp(c.at))}</p>` : ''}
+      </fieldset>${c ? `<p class="hint">Added by ${esc(nameOf(c.seat))} · ${esc(fmtStamp(c.at))}${ro ? ` — only ${esc(nameOf(c.seat))} can change or delete it` : ''}</p>` : ''}
     </form>`,
-    foot: `${c ? `<button class="btn ghost left" data-del>${icon('trash')}Delete</button>` : ''}<button class="btn ghost" data-x2>Cancel</button><button class="btn" data-s>${c ? 'Save changes' : 'Add contact'}</button>`,
+    foot: ro ? '<button class="btn" data-x2>Close</button>' : `${c ? `<button class="btn ghost left" data-del>${icon('trash')}Delete</button>` : ''}<button class="btn ghost" data-x2>Cancel</button><button class="btn" data-s>${c ? 'Save changes' : 'Add contact'}</button>`,
     onMount: (m, close) => {
       const f = $('#cf', m);
+      if (ro) { $('[data-x2]', m).onclick = () => close(); return; }
       const bindRm = () => $$('[data-rmd]', m).forEach((b) => (b.onclick = () => b.closest('.cdate').remove()));
       bindRm();
       $('#addD', m).onclick = () => { $('#cdates', m).insertAdjacentHTML('beforeend', dateRow()); bindRm(); };

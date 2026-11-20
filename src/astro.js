@@ -95,6 +95,9 @@ const Astro = (() => {
     Mars: [[1.52371034, 0.0933941, 1.84969142, -4.55343205, -23.94362959, 49.55953891], [0.00001847, 0.00007882, -0.00813131, 19140.30268499, 0.44441088, -0.29257343]],
     Jupiter: [[5.202887, 0.04838624, 1.30439695, 34.39644051, 14.72847983, 100.47390909], [-0.00011607, -0.00013253, -0.00183714, 3034.74612775, 0.21252668, 0.20469106]],
     Saturn: [[9.53667594, 0.05386179, 2.48599187, 49.95424423, 92.59887831, 113.66242448], [-0.0012506, -0.00050991, 0.00193609, 1222.49362201, -0.41897216, -0.28867794]],
+    Uranus: [[19.18916464, 0.04725744, 0.77263783, 313.23810451, 170.9542763, 74.01692503], [-0.00196176, -0.00004397, -0.00242939, 428.48202785, 0.40805281, 0.04240589]],
+    Neptune: [[30.06992276, 0.00859048, 1.77004347, -55.12002969, 44.96476227, 131.78422574], [0.00026291, 0.00005105, 0.00035372, 218.45945325, -0.32241464, -0.00508664]],
+    Pluto: [[39.48211675, 0.2488273, 17.14001206, 238.92903833, 224.06891629, 110.30393684], [-0.00031596, 0.0000517, 0.00004818, 145.20780515, -0.04062942, -0.01183482]],
   };
   function helio(name, T) {
     const [e0, r] = EL[name];
@@ -151,7 +154,7 @@ const Astro = (() => {
       const jdTT = jdFromMs(ms) + deltaT(y) / 86400;
       const T = (jdTT - 2451545) / 36525;
       const out = { Sun: sunLon(T), Moon: moonLon(T) };
-      for (const p of ['Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn']) out[p] = planetLon(p, T);
+      for (const p of ['Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto']) out[p] = planetLon(p, T);
       return out;
     },
   };
@@ -162,7 +165,7 @@ const Astro = (() => {
       const d = new Date(ms), t = AE.MakeTime(d);
       const T = (t.tt) / 36525;
       const out = {};
-      for (const b of BODIES) out[b] = norm(AE.Ecliptic(AE.GeoVector(AE.Body[b], t, true)).elon - nutLon(T)); // true → mean equinox
+      for (const b of [...BODIES, 'Uranus', 'Neptune', 'Pluto']) out[b] = norm(AE.Ecliptic(AE.GeoVector(AE.Body[b], t, true)).elon - nutLon(T)); // true → mean equinox
       return out;
     },
   };
@@ -185,10 +188,10 @@ const Astro = (() => {
   // Self-test: Astronomy Engine must agree with the built-in engine at reference instants
   function selfTest() {
     try {
-      const tol = { Sun: 0.05, Moon: 0.2, Mercury: 0.2, Venus: 0.2, Mars: 0.3, Jupiter: 0.6, Saturn: 0.8 };
+      const tol = { Sun: 0.05, Moon: 0.2, Mercury: 0.2, Venus: 0.2, Mars: 0.3, Jupiter: 0.6, Saturn: 0.8, Uranus: 1, Neptune: 1, Pluto: 1.5 };
       for (const ms of [Date.UTC(1950, 5, 1), Date.UTC(1999, 4, 14, 4, 25), Date.UTC(2024, 0, 1)]) {
         const a = aeEngine.tropical(ms), b = builtin.tropical(ms);
-        for (const k of BODIES) if (angDiff(a[k], b[k]) > tol[k]) return false;
+        for (const k of Object.keys(tol)) if (angDiff(a[k], b[k]) > tol[k]) return false;
       }
       return true;
     } catch (e) { return false; }
@@ -281,6 +284,6 @@ const Astro = (() => {
     };
   }
 
-  return { VERSION, compute, pickEngine, builtin, ayanamsa, AYANAMSAS, SIGNS, SIGNS_EN, NAKS, GRAHAS, DASHA, point, dms, norm, angDiff, sunLon, moonLon, planetLon, meanNode, trueNode, gmstDeg, ascendant, meanObliquity, deltaT, jdFromMs, nutLon };
+  return { VERSION, compute, pickEngine, builtin, obliquity: (T) => meanObliquity(T), ayanamsa, AYANAMSAS, SIGNS, SIGNS_EN, NAKS, GRAHAS, DASHA, point, dms, norm, angDiff, sunLon, moonLon, planetLon, meanNode, trueNode, gmstDeg, ascendant, meanObliquity, deltaT, jdFromMs, nutLon };
 })();
 if (typeof module !== 'undefined') module.exports = Astro;

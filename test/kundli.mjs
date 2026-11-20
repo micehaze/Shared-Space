@@ -124,6 +124,7 @@ await p.click('[data-next]');
 await p.waitForSelector('.kgrid2.tight', { timeout: 15000 });
 await shot(p, '23-phone-chart-preview');
 await p.click('[data-next]');
+await p.waitForTimeout(600); await p.click('[data-k="B"]'); await p.waitForTimeout(300); await p.click('[data-sub="chart"]').catch(() => {});
 await p.waitForSelector('.kcard'); await p.waitForTimeout(300);
 await shot(p, '24-phone-kundli-unknown-time');
 log('unknown-time ids:', await p.$eval('.kids', (e) => e.innerText.replace(/\s+/g, ' ').slice(0, 300)));

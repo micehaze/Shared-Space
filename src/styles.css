@@ -633,3 +633,42 @@ table.graha .muted { color: #6A5A9A; }
 .pair-days { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 4px 0 8px; }
 .pair-days > div { padding: 6px 8px; background: var(--well); border: 1px solid var(--line); font-size: 12px; }
 .pair-days small { display: block; color: var(--dim); font-size: 11px; margin-top: 2px; }
+.rd-b h5 { margin: 12px 0 2px; font-size: 12px; color: var(--amber); }
+.rd-b h5:first-child { margin-top: 6px; }
+.rd-b ul.facts, .koota ul.facts { margin: 4px 0 6px; padding-left: 18px; line-height: 1.55; }
+.rd-b ul.facts li, .koota ul.facts li { margin: 2px 0; }
+
+/* ---------- PIN lock ---------- */
+.demo-bar .db-lock { margin-left: 6px; padding: 2px 8px; font: 700 11px var(--font); color: #fff; background: rgba(255, 255, 255, .08); border: 1px solid; border-color: var(--hi) var(--lo) var(--lo) var(--hi); cursor: pointer; }
+.pinlock { position: fixed; inset: 0; z-index: 45; display: grid; place-items: center; background: rgba(11, 7, 32, .92); }
+.pinlock-box { width: min(92vw, 360px); padding: 22px 18px; text-align: center; background: var(--glass, #1A1036); border: 1px solid; border-color: var(--hi) var(--lo) var(--lo) var(--hi); }
+.pinlock-box .wordmark { font-size: 40px; }
+.pinlock-who { display: grid; gap: 8px; margin-top: 12px; }
+.ro-fs { border: 0; margin: 0; padding: 0; min-width: 0; }
+/* ---------- Western charts (v2) ---------- */
+.gl { font-family: 'Vice Glyphs', var(--font); font-weight: 400; display: inline-block; min-width: 1.1em; text-align: center; color: var(--amber); }
+.rd-t .gl { margin-right: 2px; }
+.wheelwrap { max-width: 520px; margin: 0 auto; }
+.wheel-svg { width: 100%; height: auto; display: block; }
+.wheel-svg .wb:hover text { filter: brightness(1.3); }
+.lc { font-weight: 700; } .lc.soft { color: #63E6FF; } .lc.hard { color: #FF3EA5; } .lc.adj { color: #FFB547; }
+.agrid { border-collapse: collapse; font-family: 'Vice Glyphs', var(--font); font-size: 12px; margin: 0 auto; }
+.agrid th, .agrid td { width: 24px; height: 24px; min-width: 24px; text-align: center; padding: 0; border: 1px solid var(--line); line-height: 1; }
+.agrid th { color: var(--amber); font-weight: 400; background: rgba(0, 0, 0, .25); }
+.agrid th.ca { color: #FF8CC6; } .agrid th.cb { color: #63E6FF; }
+.agrid td { background: rgba(0, 0, 0, .18); }
+.agrid td small { display: block; font: 8px var(--font); color: var(--dim); }
+.agrid td.k-soft { color: #63E6FF; } .agrid td.k-hard { color: #FF3EA5; } .agrid td.k-adjust { color: #FFB547; } .agrid td.k-conj { color: #FFE3F2; }
+.panel:has(.agrid) { overflow-x: auto; }
+.bal { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 12px; margin: 4px 0 8px; }
+.bal > div { display: grid; grid-template-columns: 64px 1fr 34px; align-items: center; gap: 6px; font-size: 11.5px; }
+.bal small { text-align: right; color: var(--dim); }
+.cat { display: grid; grid-template-columns: 110px 1fr 28px; align-items: center; gap: 8px; margin: 3px 0; font-size: 12px; }
+.cat b { text-align: right; color: var(--amber); }
+.gm-score b { font-family: var(--script); }
+.glance td span.gl, .glance th span.gl { display: inline-block; color: var(--amber); font-size: inherit; margin-right: 3px; }
+.glance td b .gl { color: var(--amber); }
+.astro-sw { display: flex; margin: 0 0 8px; }
+.astro-sw button { flex: 1; }
+/* practical everyday lines */
+p.life{border-left:3px solid var(--accent,#ff2d95);padding:4px 0 4px 10px;margin:8px 0}

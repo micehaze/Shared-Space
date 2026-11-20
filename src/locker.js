@@ -88,19 +88,21 @@ function openDoc(d) {
     ? `<iframe class="pv-frame" data-asset="${esc(d.asset)}" title="${esc(d.title)}"></iframe><p class="hint">If the preview stays blank, use Open or Download.</p>`
     : k === 'img' ? `<img class="pv-img" data-asset="${esc(d.asset)}" alt="${esc(d.title)}">`
       : `<pre class="pv-text" id="pvt">Loading…</pre>`;
+  const own = d.priv || !d.seat || d.seat === S.me.seat;
   openModal({
     title: d.title, wide: true,
     body: `${preview}
       <dl class="dl"><dt>Category</dt><dd>${esc(d.category || 'Other')}</dd><dt>File</dt><dd>${esc(d.name)} · ${esc(fmtSize(d.size || 0))}</dd>
-      <dt>Added</dt><dd>${esc(fmtStamp(d.at))} by ${esc(nameOf(d.seat))}</dd><dt>Who sees it</dt><dd>${d.priv ? 'Only you' : 'Both of you'}</dd>
+      <dt>Added</dt><dd>${esc(fmtStamp(d.at))} by ${esc(nameOf(d.seat))}${own ? '' : ' — only they can edit or delete it'}</dd><dt>Who sees it</dt><dd>${d.priv ? 'Only you' : 'Both of you'}</dd>
       ${d.note ? `<dt>Note</dt><dd style="white-space:pre-wrap">${esc(d.note)}</dd>` : ''}</dl>`,
-    foot: `<button class="btn ghost left" data-del>${icon('trash')}Delete</button><button class="btn ghost" data-ed>${icon('edit')}Edit</button><a class="btn ghost" data-asset="${esc(d.asset)}" target="_blank" rel="noopener">${icon('eye')}Open</a><button class="btn" data-dl>${icon('download')}Download</button>`,
+    foot: `${own ? `<button class="btn ghost left" data-del>${icon('trash')}Delete</button><button class="btn ghost" data-ed>${icon('edit')}Edit</button>` : ''}<a class="btn ghost" data-asset="${esc(d.asset)}" target="_blank" rel="noopener">${icon('eye')}Open</a><button class="btn" data-dl>${icon('download')}Download</button>`,
     onMount: async (m, close) => {
       hydrate(m);
       if (k === 'txt') { try { const u = await assetUrl(d.asset); $('#pvt', m).textContent = (await (await fetch(u)).text()).slice(0, 200000); } catch { $('#pvt', m).textContent = 'Preview unavailable. Use Download.'; } }
       $('[data-dl]', m).onclick = async () => {
         try { const u = await assetUrl(d.asset); const b = await (await fetch(u)).blob(); if (await saveFile(d.name, b)) toast('Download started'); } catch { toast('Couldn’t download this file. Try Open instead.', 'err'); }
       };
+      if (!own) return;
       $('[data-ed]', m).onclick = () => { close(); editDoc(d); };
       $('[data-del]', m).onclick = async () => {
         if (!(await confirmBox(`Delete “${d.title}”${d.priv ? '' : ' for both of you'}? This can’t be undone.`, 'Delete file'))) return;

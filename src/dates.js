@@ -48,6 +48,7 @@ function bindUpcoming(el) {
 
 function openDateForm(ev) {
   const e = ev || { type: 'Birthday', repeat: 'annual', remind: 7, date: todayISO(), knowYear: true };
+  const ro = !!(ev && ev.seat && ev.seat !== S.me.seat);
   openModal({
     title: ev ? 'Edit date' : 'Add a date',
     body: `<form id="df">
@@ -61,12 +62,13 @@ function openDateForm(ev) {
       <label class="check"><input type="checkbox" name="knowYear" ${e.knowYear !== false ? 'checked' : ''}> The year is real (show age or years together)</label>
       <label class="field" style="margin-top:8px"><span>Remind us</span><select name="remind">${REMIND_OPTS.map(([v, l]) => `<option value="${v}" ${Number(e.remind ?? -1) === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
       <label class="field"><span>Note (optional)</span><textarea name="note" maxlength="2000">${esc(e.note || '')}</textarea></label>
-      ${ev ? `<p class="hint">Added by ${esc(nameOf(ev.seat))} · ${esc(fmtStamp(ev.at))}</p>` : ''}
+      ${ev ? `<p class="hint">Added by ${esc(nameOf(ev.seat))} · ${esc(fmtStamp(ev.at))}${ro ? ` — only ${esc(nameOf(ev.seat))} can change or delete it` : ''}</p>` : ''}
     </form>`,
-    foot: `${ev ? `<button class="btn ghost left" data-del>${icon('trash')}Delete</button>` : ''}<button class="btn ghost" data-x2>Cancel</button><button class="btn" data-save>${ev ? 'Save changes' : 'Add date'}</button>`,
+    foot: ro ? '<button class="btn" data-x2>Close</button>' : `${ev ? `<button class="btn ghost left" data-del>${icon('trash')}Delete</button>` : ''}<button class="btn ghost" data-x2>Cancel</button><button class="btn" data-save>${ev ? 'Save changes' : 'Add date'}</button>`,
     onMount: (m, close) => {
       const f = $('#df', m);
       $('[data-x2]', m).onclick = () => close();
+      if (ro) { $$('input, select, textarea', f).forEach((x) => { x.disabled = true; }); return; }
       f.type.onchange = () => { if (['Birthday', 'Anniversary'].includes(f.type.value)) f.repeat.checked = true; };
       $('[data-save]', m).onclick = async () => {
         if (!f.reportValidity()) return;

@@ -1,5 +1,6 @@
 // Checks the five Kundli requirements from both partners' point of view.
 import { createRequire } from 'node:module';
+import { asPerson } from './pin-helper.mjs';
 import http from 'node:http';
 import { readFileSync, mkdirSync } from 'node:fs';
 const require = createRequire('/opt/npm-tools/node_modules/');
@@ -31,14 +32,14 @@ const make = async (name, date, time, city) => {
   await p.click('[data-next]'); await W(800);
 };
 await p.goto(base + '#inbox'); await p.waitForSelector('.demo-bar');
-await p.click('.demo-bar [data-p="A"]'); await W(400);
+await asPerson(p, 'A'); await W(400);
 await make('Anya', '1999-05-14', '07:25', 'Moscow');
-await p.click('.demo-bar [data-p="B"]'); await W(400);
+await asPerson(p, 'B'); await W(400);
 await make('Rohan', '1996-02-02', '20:40', 'Mumbai');
 ok(await p.$eval('#ktabs [aria-pressed="true"]', (e) => e.dataset.k) === 'pair', 'After the second Kundli is saved, Compatibility opens automatically');
 
 for (const viewer of ['A', 'B']) {
-  await p.click(`.demo-bar [data-p="${viewer}"]`); await W(400);
+  await asPerson(p, viewer); await W(400);
   await p.goto(base + '#kundlis'); await W(500);
   const V = `[viewing as ${viewer}]`;
   // 1 — both charts and the compatibility map
@@ -51,6 +52,10 @@ for (const viewer of ['A', 'B']) {
   ok(await p.$('.wheel') !== null, `${V} 1. Compatibility map (two-ring wheel) is visible`);
   ok((await p.$$('.kgrid2.two svg.kchart')).length === 2, `${V} 1. Compatibility kundali (each other's planets in your houses) is visible`);
   ok((await p.$$('.koota')).length === 8, `${V} 1. All 8 Guna Milan kootas shown`);
+  const kw = await p.$$eval('.koota', (a) => a.map((d) => d.textContent.trim().split(/\s+/).length));
+  ok(Math.min(...kw) >= 70, `${V} 5. Every koota explained in depth (shortest ${Math.min(...kw)} words)`);
+  ok(await p.$eval('#kbody', (e) => /What each part of your compatibility means/.test(e.innerText)), `${V} 5. Guide to every part of the compatibility screen`);
+  ok(await p.$eval('#kbody', (e) => /Contacts on the map|No planets of yours sit within 8°/.test(e.innerText)), `${V} 5. Compatibility map contacts explained`);
   // 4 — couple daily prediction
   const tog = await p.$eval('.panel:has(h3:text-matches("Today together"))', (e) => e.innerText).catch(() => '');
   ok(/Best plan for today/.test(tog) && /Your week together/.test(tog) && /Best day for a date/.test(tog), `${V} 4. Daily prediction for the couple (today + week) is visible`);
@@ -73,7 +78,10 @@ for (const viewer of ['A', 'B']) {
     const maxShort = Math.max(...rds.filter((r) => r.g).map((r) => words(r.g)));
     ok(maxShort <= 30, `${V} 5. Person ${seat}: summaries are short (longest ${maxShort} words)`);
     const shortest = rds.filter((r) => r.g).sort((x, y) => words(x.b) - words(y.b))[0]; const minLong = words(shortest.b);
-    ok(minLong >= 25, `${V} 5. Person ${seat}: full explanations are detailed (shortest ${minLong} words: ${shortest.t})`);
+    ok(minLong >= 60, `${V} 5. Person ${seat}: full explanations are detailed (shortest ${minLong} words: ${shortest.t})`);
+    const gr = rds.filter((r) => /Surya|Chandra|Mangal|Budh|Guru|Shukra|Shani|Rahu|Ketu/.test(r.t) && !/yoga/i.test(r.t));
+    ok(Math.min(...gr.map((r) => words(r.b))) >= 300, `${V} 5. Person ${seat}: every graha explained in depth (shortest ${Math.min(...gr.map((r) => words(r.b)))} words)`);
+    ok(gr.every((r) => /Strengths:/.test(r.b) && /In love:/.test(r.b) && /At its best|When it struggles/.test(r.b)), `${V} 2. Person ${seat}: graha readings cover sign traits, love and practical effects`);
     if (viewer === 'A' && seat === 'A') { await p.screenshot({ path: `${OUT}/02-glance.png` }); await p.$eval('.rd:has(.rd-t:text-matches("Surya"))', (e) => e.scrollIntoView()); await W(150); await p.screenshot({ path: `${OUT}/03-grahas.png` }); }
     // 3 — daily prediction with advice
     await p.click('[data-sub="forecast"]'); await W(300); await p.click('[data-fc="today"]'); await W(300);

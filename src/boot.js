@@ -9,7 +9,7 @@ const NAV = [
   ['notepad', 'Notepad', 'note'],
   ['contacts', 'Contacts', 'contacts'],
   ['dates', 'Special dates', 'calendar'],
-  ['kundlis', 'Our Kundlis', 'star'],
+  ['kundlis', 'Our Charts', 'star'],
   ['account', 'Settings', 'sliders'],
 ];
 const TAB_NAV = ['inbox', 'gallery', 'locker', 'dates'];
@@ -86,14 +86,18 @@ function phoneSetup() {
     <p>A private space for two, kept on this phone. Nothing is uploaded anywhere.</p>
     <form id="setupForm">
       <label class="field"><span>Your name</span><input name="a" required maxlength="40" autocomplete="nickname" placeholder="e.g. Anya"></label>
+      <label class="field"><span>Your PIN (4–6 digits)</span><input name="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" required autocomplete="off"></label>
       <label class="field"><span>Your partner’s name</span><input name="b" required maxlength="40" placeholder="e.g. Rohan"></label>
       <button class="btn" type="submit">Open our space</button>
-      <p class="hint">You can both use this phone: switch who’s writing at the top of the screen.</p>
+      <p class="hint" id="setupErr" role="alert"></p>
+      <p class="hint">You can both use this phone. Each of you has your own PIN, so nobody can write, upload or create a Kundali as the other. Your partner sets their PIN the first time they switch to their name.</p>
     </form>`);
   $('#setupForm').onsubmit = async (e) => {
     e.preventDefault();
-    const a = e.target.a.value.trim(), bb = e.target.b.value.trim();
+    const a = e.target.a.value.trim(), bb = e.target.b.value.trim(), pin = e.target.pin.value.trim();
     if (!a || !bb) return;
+    if (!PIN.valid(pin)) { $('#setupErr').textContent = 'Choose a PIN of 4 to 6 digits.'; return; }
+    await PIN.set('A', pin); PIN.markUnlocked();
     const now = Date.now();
     await S.st.db.doc('space/members').set({ seats: { A: { id: 'demo-A', nick: a, joinedAt: now }, B: { id: 'demo-B', nick: bb, joinedAt: now } } });
     try { localStorage.setItem('oss.demoPerson', 'A'); } catch {}
@@ -228,7 +232,7 @@ function startApp(seat) {
   const demo = S.st.mode === 'local';
   root().innerHTML = `<div class="app ${demo ? 'has-demo' : ''}">
     ${demo ? `<div class="demo-bar"><span>${window.OSS_STANDALONE ? 'Writing as' : 'Demo mode: saved in this browser only. Viewing as'}</span>
-      <span class="sw" role="group" aria-label="Who is writing"><button data-p="A" aria-pressed="${seat === 'A'}">${esc(nameOf('A'))}</button><button data-p="B" aria-pressed="${seat === 'B'}">${esc(nameOf('B'))}</button></span>${window.OSS_STANDALONE ? '<span class="db-note">Saved on this phone</span>' : ''}</div>` : ''}
+      <span class="sw" role="group" aria-label="Who is writing"><button data-p="A" aria-pressed="${seat === 'A'}">${esc(nameOf('A'))}</button><button data-p="B" aria-pressed="${seat === 'B'}">${esc(nameOf('B'))}</button></span><button class="db-lock" data-lock type="button">${PIN.has(seat) ? 'Lock' : 'Set my PIN'}</button>${window.OSS_STANDALONE ? '<span class="db-note">Saved on this phone</span>' : ''}</div>` : ''}
     <aside class="side" aria-label="Main">
       <span class="wordmark">Vice Space</span>
       <div class="tag" id="sideTag"></div>
@@ -242,12 +246,20 @@ function startApp(seat) {
       <button type="button" data-nav="more" id="moreBtn">${icon('more')}<span>More</span></button>
     </nav>
   </div>`;
-  if (demo) $$('.demo-bar [data-p]').forEach((b) => (b.onclick = () => S.st.switchPerson(b.dataset.p)));
+  if (demo) {
+    $$('.demo-bar [data-p]').forEach((b) => (b.onclick = () => PIN.switchTo(b.dataset.p)));
+    const lk = $('.demo-bar [data-lock]');
+    lk.onclick = async () => {
+      if (PIN.has(S.me.seat)) { PIN.lockScreen(); return; }
+      if (await PIN.ask(S.me.seat, 'create')) { PIN.markUnlocked(); lk.textContent = 'Lock'; toast('PIN saved — only you can write as ' + nameOf(S.me.seat)); }
+    };
+  }
   $('#moreBtn').onclick = openMore;
   startSubs();
   onData(() => { updateChrome(); });
   window.addEventListener('hashchange', route);
   route();
+  if (demo) PIN.guard();
 }
 
 function openMore() {

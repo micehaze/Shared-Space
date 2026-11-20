@@ -107,15 +107,16 @@ function openViewer(list, i, opts = {}) {
   const draw = () => {
     const p = list[i];
     if (!p) return close();
+    const ro = opts.readOnly || (p.seat && p.seat !== S.me.seat);
     v.innerHTML = `<div class="vtop"><span>${i + 1} of ${list.length}</span><span class="row" style="gap:4px">
-        ${opts.readOnly ? '' : `<button class="icon-btn" data-ed aria-label="Edit details">${icon('edit')}</button>`}
+        ${ro ? '' : `<button class="icon-btn" data-ed aria-label="Edit details">${icon('edit')}</button>`}
         <button class="icon-btn" data-dl aria-label="Download">${icon('download')}</button>
-        ${opts.readOnly ? '' : `<button class="icon-btn" data-del aria-label="Delete photo">${icon('trash')}</button>`}
+        ${ro ? '' : `<button class="icon-btn" data-del aria-label="Delete photo">${icon('trash')}</button>`}
         <button class="icon-btn" data-c aria-label="Close">${icon('close')}</button></span></div>
       <div class="stage"><img data-asset="${esc(p.full)}" alt="${esc(p.caption || 'Photo')}">
         ${list.length > 1 ? `<button class="nav prev" data-p aria-label="Previous photo">${icon('left')}</button><button class="nav next" data-n aria-label="Next photo">${icon('right')}</button>` : ''}</div>
       <div class="vinfo">${p.caption ? `<p style="font-weight:700;font-size:13px">${esc(p.caption)}</p>` : ''}
-        ${opts.readOnly ? '' : `<p class="s">${esc(p.date ? fmtDate(p.date, { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' }) : '')}${p.album ? ' · ' + esc(p.album) : ''} · added by ${esc(nameOf(p.seat))}</p>`}</div>`;
+        ${opts.readOnly ? '' : `<p class="s">${esc(p.date ? fmtDate(p.date, { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' }) : '')}${p.album ? ' · ' + esc(p.album) : ''} · added by ${esc(nameOf(p.seat))}${ro && !opts.readOnly ? ' — only they can edit or delete it' : ''}</p>`}</div>`;
     hydrate(v);
     $('[data-c]', v).onclick = close;
     const pv = $('[data-p]', v), nx = $('[data-n]', v);
@@ -124,7 +125,7 @@ function openViewer(list, i, opts = {}) {
     $('[data-dl]', v).onclick = async () => {
       try { const url = await assetUrl(p.full); const b = await (await fetch(url)).blob(); await saveFile(p.name || 'photo.jpg', b); } catch { toast('Couldn’t download this photo.', 'err'); }
     };
-    if (!opts.readOnly) $('[data-del]', v).onclick = async () => {
+    if (!ro) $('[data-del]', v).onclick = async () => {
       if (!(await confirmBox('Delete this photo for both of you? This can’t be undone.', 'Delete photo'))) return;
       try {
         await S.st.db.doc('photos/' + p.id).delete();
@@ -132,7 +133,7 @@ function openViewer(list, i, opts = {}) {
         list.splice(i, 1); if (i >= list.length) i = list.length - 1; toast('Photo deleted'); draw();
       } catch (e) { toast(errText(e), 'err'); }
     };
-    if (!opts.readOnly) $('[data-ed]', v).onclick = () => editPhoto(p, (np) => { list[i] = np; draw(); });
+    if (!ro) $('[data-ed]', v).onclick = () => editPhoto(p, (np) => { list[i] = np; draw(); });
     $('[data-c]', v).focus();
   };
   const key = (e) => {

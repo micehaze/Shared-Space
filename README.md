@@ -1,8 +1,4 @@
-# Vice Shared Space — Android app
-
-📱 Download Android APK
-
-[Download Shared-Space for Android](https://github.com/micehaze/Shared-Space/releases)
+# Vice Space — Android app
 
 A private space for two, kept on one phone: shared inbox, gallery, document locker,
 notepad (with photos and coloured text), contacts, special dates and calculated

@@ -148,10 +148,7 @@ Object.assign(VIEWS.kundlis, {
         ${k.houses.map((h) => {
           const lord = JY.SIGN_LORD[h.sign], lp = k.planets.find((p) => p.key === lord), occ = k.planets.filter((p) => p.house === h.n);
           const H = JY.HOUSES[h.n - 1];
-          return rd(`<span class="ab">${h.n}</span>${esc(H.name)}`, `<p>The ${JY.ord(h.n)} house covers <b>${H.a}</b>.</p>
-            <p>In your chart it falls in <b>${esc(signName(h.sign))}</b>, so you approach these matters with ${JY.SIGNS[h.sign].kw}.</p>
-            <p>Its lord is <b>${esc(JY.label(lord))}</b>, placed in your ${JY.ord(lp.house)} house (${JY.HOUSES[lp.house - 1].a.split(',').slice(0, 3).join(',')}). This links the two areas: what happens in one tends to show up in the other. The lord is ${JY.dignity(lord, lp.lon).t}.</p>
-            <p>${occ.length ? `Planets here: <b>${occ.map((p) => esc(JY.label(p.key))).join(', ')}</b> — they colour this house strongly with their own nature (see each graha above).` : 'No planets sit here, so the house is read mainly through its lord and sign — an empty house is not a weak or “missing” area of life.'}</p>`, false, `${esc(signName(h.sign))}${occ.length ? ' · ' + occ.map((p) => Astro.GRAHAS.find((g) => g.key === p.key).ab).join(' ') : ''}`, JY.houseGlance(k, h.n).replace(/^./, (c) => c.toUpperCase()));
+          return rd(`<span class="ab">${h.n}</span>${esc(H.name)}`, JY.houseReading(k, h), false, `${esc(signName(h.sign))}${occ.length ? ' · ' + occ.map((p) => Astro.GRAHAS.find((g) => g.key === p.key).ab).join(' ') : ''}`, JY.houseGlance(k, h.n).replace(/^./, (c) => c.toUpperCase()));
         }).join('')}</section>` : ''}
       <section class="panel"><div class="ph"><h3>Yogas and special notes</h3></div>
         ${yogas(k).map(([t, d]) => rd(esc(t), `<p>${d}</p>`)).join('')}
@@ -266,15 +263,15 @@ Object.assign(VIEWS.kundlis, {
     const mm = mA.any === mB.any ? (mA.any ? 'Both of you are Manglik, which traditionally cancels the dosha.' : 'Neither of you is Manglik — no Kuja dosha to balance.') : `${mA.any ? nA : nB} is Manglik and ${mA.any ? nB : nA} is not. Traditionally this calls for care; it is often considered reduced by other strengths in the charts.`;
     const harm = [];
     const eM = JY.elementHarmony(kA.moon.sign, kB.moon.sign);
-    harm.push(['Moon signs (emotional nature)', `${nA}: ${esc(signName(kA.moon.sign))}; ${nB}: ${esc(signName(kB.moon.sign))} — ${eM.t}.`, eM.s]);
-    if (kA.lagna && kB.lagna) { const e = JY.elementHarmony(kA.lagna.sign, kB.lagna.sign); harm.push(['Rising signs (temperament)', `${nA}: ${esc(signName(kA.lagna.sign))}; ${nB}: ${esc(signName(kB.lagna.sign))} — ${e.t}.`, e.s]); }
+    harm.push(['Moon signs (emotional nature)', `${nA}: ${esc(signName(kA.moon.sign))}; ${nB}: ${esc(signName(kB.moon.sign))}. ${JY.elemDeep(kA.moon.sign, kB.moon.sign)} The Moon shows what each of you needs to feel safe: ${nA} needs ${JY.SIGNS[kA.moon.sign].kw}; ${nB} needs ${JY.SIGNS[kB.moon.sign].kw}.`, eM.s]);
+    if (kA.lagna && kB.lagna) { const e = JY.elementHarmony(kA.lagna.sign, kB.lagna.sign); harm.push(['Rising signs (temperament)', `${nA}: ${esc(signName(kA.lagna.sign))}; ${nB}: ${esc(signName(kB.lagna.sign))}. ${JY.elemDeep(kA.lagna.sign, kB.lagna.sign)} The rising sign is how you act and come across, so this shows how your styles fit day to day.`, e.s]); }
     const lum = (x, y, nx, ny) => { const d = JY.fromMoon(pl(x, 'Sun').sign, y.moon.sign); const good = [1, 5, 7, 9].includes(d), bad = [6, 8].includes(d); return [`${nx}’s Sun and ${ny}’s Moon`, `${nx}’s Sun is ${d === 1 ? 'in the same sign as' : `${JY.ord(d)} from`} ${ny}’s Moon — ${good ? 'a classic sign of mutual support: one gives direction, the other feels understood' : bad ? 'a tense angle: you may misread each other’s needs at times' : 'a neutral link'}.`, good ? 1 : bad ? -1 : 0]; };
     harm.push(lum(kA, kB, nA, nB), lum(kB, kA, nB, nA));
-    const vm = (x, y, nx, ny) => { const v = pl(x, 'Venus'), m = pl(y, 'Mars'); const e = JY.elementHarmony(v.sign, m.sign); const conj = v.sign === m.sign; return [`${nx}’s Venus and ${ny}’s Mars (attraction)`, `${esc(signName(v.sign))} and ${esc(signName(m.sign))} — ${conj ? 'in the same sign: strong physical chemistry' : e.t}.`, conj ? 2 : e.s]; };
+    const vm = (x, y, nx, ny) => { const v = pl(x, 'Venus'), m = pl(y, 'Mars'); const e = JY.elementHarmony(v.sign, m.sign); const conj = v.sign === m.sign; return [`${nx}’s Venus and ${ny}’s Mars (attraction)`, `Venus is how ${nx} loves and what attracts them; Mars is how ${ny} desires and pursues. ${esc(signName(v.sign))} and ${esc(signName(m.sign))}: ${conj ? 'in the same sign — strong physical chemistry and an immediate spark.' : JY.elemDeep(v.sign, m.sign)}`, conj ? 2 : e.s]; };
     harm.push(vm(kA, kB, nA, nB), vm(kB, kA, nB, nA));
     const seventh = (x, y, nx, ny) => { if (!x.lagna) return null; const s7 = (x.lagna.sign + 6) % 12; const hit = (y.lagna && y.lagna.sign === s7) || y.moon.sign === s7; return hit ? [`${ny} embodies ${nx}’s 7th house`, `${nx}’s house of marriage is ${esc(signName(s7))}, and ${ny}’s ${y.lagna && y.lagna.sign === s7 ? 'rising sign' : 'Moon'} is there — traditionally a strong sign of a destined partnership.`, 2] : null; };
     [seventh(kA, kB, nA, nB), seventh(kB, kA, nB, nA)].forEach((x) => x && harm.push(x));
-    const overlay = (owner, other, nO, nX) => other.planets.map((p) => { const h = owner.lagna ? ((p.sign - owner.lagna.sign + 12) % 12) + 1 : JY.fromMoon(p.sign, owner.moon.sign); const romance = [1, 5, 7, 8, 12].includes(h) && ['Venus', 'Mars', 'Moon', 'Sun'].includes(p.key); return `<li class="${romance ? 'ok' : ''}"><b>${nX}’s ${esc(JY.label(p.key))} → ${nO}’s ${JY.ord(h)} house</b><br><small>${nX}’s ${esc(JY.P[p.key].en)} ${OVERLAY[p.key]} ${nO}’s ${JY.HOUSES[h - 1].a.split(',').slice(0, 3).join(',')}.${romance ? ' A classic romance contact.' : ''}</small></li>`; }).join('');
+    const overlay = (owner, other, nO, nX) => other.planets.map((p) => { const h = owner.lagna ? ((p.sign - owner.lagna.sign + 12) % 12) + 1 : JY.fromMoon(p.sign, owner.moon.sign); const romance = [1, 5, 7, 8, 12].includes(h) && ['Venus', 'Mars', 'Moon', 'Sun'].includes(p.key); return `<li class="${romance ? 'ok' : ''}"><b>${nX}’s ${esc(JY.label(p.key))} → ${nO}’s ${JY.ord(h)} house</b><br><small>${nX}’s ${esc(JY.P[p.key].en)} ${OVERLAY[p.key]} ${nO}’s ${JY.HOUSES[h - 1].a.split(',').slice(0, 3).join(',')}. For ${nO}, ${JY.REL_HOUSE[h - 1]}.${romance ? ' A classic romance contact.' : ''}<br><b>In daily life:</b> ${LIFE.overlay(p.key, h, nX, nO)}</small></li>`; }).join('');
     const pct = Math.round((g.total / 36) * 100);
     return `<section class="panel"><div class="ph"><h3>${nA} &amp; ${nB} — Guna Milan</h3></div>
         <div class="roles"><span class="muted">Guna Milan is directional. Traditional roles:</span><div class="seg sm" role="group" aria-label="Roles"><button data-groom="A" aria-pressed="${groom === 'A'}">${nA} groom · ${nB} bride</button><button data-groom="B" aria-pressed="${groom === 'B'}">${nB} groom · ${nA} bride</button></div></div>
@@ -282,15 +279,26 @@ Object.assign(VIEWS.kundlis, {
           <div class="gm-meter"><span class="meter big"><i style="width:${pct}%"></i><em style="left:${(18 / 36) * 100}%"></em><em style="left:${(25 / 36) * 100}%"></em><em style="left:${(33 / 36) * 100}%"></em></span><div class="gm-band">${esc(g.band)}</div>
           <p class="hint">Under 18 is traditionally not recommended · 18–24 average · 25–32 very good · 33–36 excellent.</p></div></div>
         <p>${nA} and ${nB} score <b>${g.total % 1 ? g.total.toFixed(1) : g.total} of 36</b>. ${full.length ? `Full marks in <b>${full.join(', ')}</b>.` : ''} ${zero.length ? `No points in <b>${zero.join(', ')}</b>${g.K.some((x) => x.cancelled) ? ' (a traditional cancellation applies — see below)' : ''}.` : 'Every koota scores some points.'} ${mm}</p>
-        <div class="kootas">${g.K.map((x) => `<details class="koota"><summary><span class="kn">${x.key}</span><span class="kbar"><i style="width:${(x.pts / x.max) * 100}%"></i></span><span class="kp">${x.pts}/${x.max}</span></summary><p><b>What it measures:</b> ${x.what}.</p><p>${x.detail}</p></details>`).join('')}</div>
+        <div class="kootas">${g.K.map((x) => `<details class="koota"><summary><span class="kn">${x.key}</span><span class="kbar"><i style="width:${(x.pts / x.max) * 100}%"></i></span><span class="kp">${x.pts}/${x.max}</span></summary>${JY.kootaDeep(x, groom === 'A' ? nA : nB, groom === 'A' ? nB : nA)}<p class="life"><b>In daily life:</b> ${LIFE.koota(x, groom === 'A' ? nA : nB, groom === 'A' ? nB : nA)}</p></details>`).join('')}</div>
         ${DISCLAIM}</section>
+      ${LIFE.areasHtml((seat, key) => pl(seat === 'A' ? kA : kB, key).sign, nA, nB)}
+      <section class="panel"><div class="ph"><h3>What each part of your compatibility means</h3></div>
+        ${rd('Guna Milan score (36 points)', `<p>Ashtakoota Guna Milan is the traditional Vedic matching method. It compares the two Moon positions through eight factors (kootas) worth 1 to 8 points each, 36 in total. The weights grow with importance: Varna 1, Vashya 2, Tara 3, Yoni 4, Graha Maitri 5, Gana 6, Bhakoot 7, Nadi 8.</p><p>Under 18 is traditionally not recommended, 18–24 is average, 25–32 very good and 33–36 excellent. The score is a starting point: astrologers also weigh doshas and their cancellations, Manglik status and the whole charts. It is directional — the groom and bride roles change some kootas — which is why you can switch roles above.</p>`, false, '', 'The classic 8-factor Vedic match, out of 36.')}
+        ${rd('The eight kootas', `<ul class="facts">${['Varna — life orientation and mutual respect (1)', 'Vashya — attraction and who influences whom (2)', 'Tara — whether your stars bring each other luck and health (3)', 'Yoni — instinctive and physical compatibility (4)', 'Graha Maitri — friendship of minds (5)', 'Gana — temperament (6)', 'Bhakoot — emotional affinity and family welfare (7)', 'Nadi — constitution, health and children (8)'].map((t) => `<li>${t}</li>`).join('')}</ul><p>Open any koota above for how it is calculated, what your two values mean and what traditionally balances a low score.</p>`, false, '', 'Each koota measures one side of the bond; open them above.')}
+        ${rd('Compatibility map', `<p>The map puts both charts on one sidereal zodiac wheel: ${nA}’s planets on the inner ring, ${nB}’s on the outer ring, with Aries at the left and the signs running anticlockwise. Where a planet of one sits within 8° of a planet of the other, a line joins them: gold for supportive pairs (with the Moon, Venus or Jupiter), pink for intense ones (with Mars–Mars or Saturn). These contacts are the most direct links between your charts; each is explained under the map.</p>`, false, '', 'Both charts on one wheel; lines mark the planets that touch.')}
+        ${rd('Where you meet', `<p>Compares the elements of your Moon signs (emotional needs), rising signs (style), Sun–Moon links (whether one person’s purpose supports the other’s feelings), Venus–Mars links (attraction) and whether one of you embodies the other’s house of marriage. Green items are natural harmonies, red ones need conscious effort.</p>`, false, '', 'Element and planet harmonies beyond the 36 points.')}
+        ${rd('Manglik check', `<p>Checks Mars in the 1st, 2nd, 4th, 7th, 8th or 12th house from the Lagna and the Moon. Traditionally the dosha matters only when one partner has it and the other does not; it has many cancellations, so it is a point of care, not a verdict.</p>`, false, '', 'Mars’s traditional effect on marriage, for both of you.')}
+        ${rd('Compatibility kundali', `<p>Each partner’s planets are placed into the other’s houses. A planet in your 5th, 7th or 12th house touches romance, marriage or intimacy; in your 10th, your career; in your 4th, your home. Every planet is listed with what it brings.</p>`, false, '', 'Which parts of your life the partner’s planets touch.')}
+        ${rd('Today together', `<p>A daily reading for the couple: the Moon’s position counted from each of your birth Moons, tara bala for each birth star, Chandrashtama days, and the Moon passing over each other’s Sun, Moon, Venus or Mars — combined into one score with a suggested plan and the best day this week.</p>`, false, '', 'The couple’s day, from both charts at once.')}
+      </section>
       ${this.togetherHtml(kA, kB, nA, nB)}
       <section class="kgrid2"><div class="panel"><div class="ph"><h3>Compatibility map</h3></div>
           <div class="chartwrap">${this.wheel(kA, kB)}</div>
+          ${(() => { const cs = this.contacts(kA, kB); return cs.length ? `<h4>Contacts on the map</h4><ul class="tlist">${cs.map((c) => `<li class="${c.soft ? 'ok' : 'no'}"><b>${nA}’s ${esc(JY.label(c.a))} ↔ ${nB}’s ${esc(JY.label(c.b))}</b> <small class="muted">${c.d.toFixed(1)}° apart</small><br><small>${JY.contactText(c.a, c.b)}.</small></li>`).join('')}</ul>` : `<p class="hint">No planets of yours sit within 8° of each other — the bond is described by the kootas and house overlays rather than by direct contacts.</p>`; })()}
           <p class="legend"><span class="swc a"></span>${nA} (inner ring) · <span class="swc b"></span>${nB} (outer ring). Both charts on one sidereal zodiac, Aries at the left and the signs running anticlockwise. Lines join planets of yours that sit within 8° of each other: gold for supportive pairs, pink for intense ones.</p></div>
         <div class="panel"><div class="ph"><h3>Where you meet</h3></div>
           <ul class="tlist">${harm.map(([t, d, s]) => `<li class="${s > 0 ? 'ok' : s < 0 ? 'no' : ''}"><b>${t}</b><br><small>${d}</small></li>`).join('')}</ul>
-          <h4>Manglik check</h4><ul class="tlist"><li class="${mA.any ? 'no' : 'ok'}"><b>${nA}: ${mA.any ? 'Manglik' : 'not Manglik'}</b><br><small>Mars ${kA.lagna ? `in the ${JY.ord(mA.fromLagna)} from Lagna, ` : ''}${JY.ord(mA.fromMoon)} from the Moon. ${mA.any ? mA.mitig : ''}</small></li><li class="${mB.any ? 'no' : 'ok'}"><b>${nB}: ${mB.any ? 'Manglik' : 'not Manglik'}</b><br><small>Mars ${kB.lagna ? `in the ${JY.ord(mB.fromLagna)} from Lagna, ` : ''}${JY.ord(mB.fromMoon)} from the Moon. ${mB.any ? mB.mitig : ''}</small></li></ul><p class="hint">${mm}</p></div></section>
+          <h4>Manglik check</h4><p class="hint" style="margin-top:0">Manglik (Kuja dosha) means Mars sits in a house where its heat traditionally affects marriage: the 1st, 2nd, 4th, 7th, 8th or 12th, counted from the Lagna and from the Moon.</p><ul class="tlist"><li class="${mA.any ? 'no' : 'ok'}"><b>${nA}: ${mA.any ? 'Manglik' : 'not Manglik'}</b><br><small>Mars ${kA.lagna ? `in the ${JY.ord(mA.fromLagna)} from Lagna, ` : ''}${JY.ord(mA.fromMoon)} from the Moon. ${mA.any ? JY.manglikDeep(kA, mA) : 'Mars is not in the houses linked with Kuja dosha (1, 2, 4, 7, 8, 12).'}</small></li><li class="${mB.any ? 'no' : 'ok'}"><b>${nB}: ${mB.any ? 'Manglik' : 'not Manglik'}</b><br><small>Mars ${kB.lagna ? `in the ${JY.ord(mB.fromLagna)} from Lagna, ` : ''}${JY.ord(mB.fromMoon)} from the Moon. ${mB.any ? JY.manglikDeep(kB, mB) : 'Mars is not in the houses linked with Kuja dosha (1, 2, 4, 7, 8, 12).'}</small></li></ul><p class="hint">${mm}</p></div></section>
       <section class="panel"><div class="ph"><h3>Compatibility kundali — each other’s planets in your houses</h3></div>
         <p style="margin-top:0">This is how Jyotish reads a couple’s charts together: the partner’s grahas are placed into your houses to see which parts of your life they touch.</p>
         <div class="kgrid2 two"><div><h4>${nB}’s grahas in ${nA}’s chart</h4><div class="chartwrap">${chartSvg(placeIn(kA, kB.planets), this.style)}</div></div>
@@ -324,6 +332,14 @@ Object.assign(VIEWS.kundlis, {
       <div class="days">${days.map((d) => `<div class="dcell${d === best ? ' best' : ''}${d.a.ch || d.b.ch ? ' ch' : ''}"><b>${esc(new Date(d.ms).toLocaleDateString(undefined, { weekday: 'short' }))}</b><small>${esc(new Date(d.ms).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }))}</small><span class="vbar"><i style="height:${d.score}%"></i></span><span class="dn">${d.score}</span></div>`).join('')}</div>
       <p><b>Best day for a date:</b> ${esc(fmtW(best.ms))} — ${best.plan}.</p></section>`;
   },
+  contacts(kA, kB) {
+    const KEYS = ['Sun', 'Moon', 'Mars', 'Venus', 'Jupiter', 'Saturn'], out = [];
+    for (const a of KEYS) for (const b of KEYS) {
+      const pa = kA.planets.find((p) => p.key === a), pb = kB.planets.find((p) => p.key === b), d = Astro.angDiff(pa.lon, pb.lon);
+      if (d < 8) { const soft = ['Venus', 'Jupiter', 'Moon'].includes(a) || ['Venus', 'Jupiter', 'Moon'].includes(b); const hard = a === 'Saturn' || b === 'Saturn' || (a === 'Mars' && b === 'Mars'); out.push({ a, b, d, soft: soft && !hard }); }
+    }
+    return out.sort((x, y) => x.d - y.d);
+  },
   wheel(kA, kB) {
     const R = 170, pt = (lon, r) => { const a = ((180 + lon) * Math.PI) / 180; return [r * Math.cos(a), -r * Math.sin(a)]; };
     let s = '';
@@ -343,18 +359,13 @@ Object.assign(VIEWS.kundlis, {
     };
     const ring = { a: [], b: [] };
     const outerB = place(kB, 135, 'b'), innerA = place(kA, 86, 'a');
-    // contacts
-    const KEYS = ['Sun', 'Moon', 'Mars', 'Venus', 'Jupiter', 'Saturn'];
     let lines = '';
-    for (const a of KEYS) for (const b of KEYS) {
-      const pa = kA.planets.find((p) => p.key === a), pb = kB.planets.find((p) => p.key === b);
-      if (Astro.angDiff(pa.lon, pb.lon) < 8) {
-        const soft = ['Venus', 'Jupiter', 'Moon'].includes(a) || ['Venus', 'Jupiter', 'Moon'].includes(b);
-        const hard = a === 'Saturn' || b === 'Saturn' || (a === 'Mars' && b === 'Mars');
-        const [x1, y1] = pt(pa.lon, 34), [x2, y2] = pt(pb.lon, 142);
-        lines += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" class="wc ${soft && !hard ? 'soft' : 'hard'}"><title>${esc(JY.label(a))} – ${esc(JY.label(b))}</title></line>`;
-      }
+    for (const c of this.contacts(kA, kB)) {
+      const pa = kA.planets.find((p) => p.key === c.a), pb = kB.planets.find((p) => p.key === c.b);
+      const [x1, y1] = pt(pa.lon, 34), [x2, y2] = pt(pb.lon, 142);
+      lines += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" class="wc ${c.soft ? 'soft' : 'hard'}"><title>${esc(JY.label(c.a))} – ${esc(JY.label(c.b))}</title></line>`;
     }
+
     void ring;
     return `<svg class="kchart wheel" viewBox="-176 -176 352 352" role="img" aria-label="Both charts on one zodiac wheel">${s}${lines}${outerB}${innerA}</svg>`;
   },

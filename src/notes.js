@@ -119,7 +119,7 @@ VIEWS.notepad = {
         $('[data-rm]', r).onclick = () => { r.remove(); touch(); };
       });
     };
-    const touch = () => { dirty = true; status('Unsaved changes', 'dirty'); clearTimeout(timer); timer = setTimeout(() => save(), 2000); };
+    const touch = () => { if (cur && cur.ro) return; dirty = true; status('Unsaved changes', 'dirty'); clearTimeout(timer); timer = setTimeout(() => save(), 2000); };
     const open = (n, isNew = false) => {
       clearTimeout(timer);
       cur = isNew ? { id: uid(), priv: false, rev: 0, isNew: true, seat: S.me.seat, at: Date.now() } : { id: n.id, priv: n.priv, rev: n.rev || 0, isNew: false, seat: n.seat, at: n.at };
@@ -143,6 +143,14 @@ VIEWS.notepad = {
         <div class="save-line"><span class="st" id="nst">${isNew ? 'New note — not saved yet' : esc(savedLine(n))}</span>
           <span class="row"><button class="btn ghost sm" id="ndel" ${isNew ? 'hidden' : ''}>${icon('trash')}Delete</button><button class="btn sm" id="nsave">Save note</button></span></div>`;
       drawItems(d.items || []);
+      cur.ro = !isNew && !n.priv && n.seat && n.seat !== S.me.seat;
+      if (cur.ro) {
+        $('#nbanner', el).innerHTML = `<div class="banner">${icon('lock')}<span>Written by <b>${esc(nameOf(n.seat))}</b> — only ${esc(nameOf(n.seat))} can change it. You can read it or save your own copy.</span></div>`;
+        $('#nt', el).readOnly = true; $('#nb', el).contentEditable = 'false';
+        ['.fmt', '.swatches', '#nadd'].forEach((q) => { const x = $(q, el); if (x) x.hidden = true; });
+        $$('.ck[data-i] input', el).forEach((i) => { i.disabled = true; }); $$('.ck[data-i] [data-rm]', el).forEach((b) => { b.hidden = true; });
+        $('#ndel', el).hidden = true; $('#nsave', el).textContent = 'Save a copy as mine';
+      }
       wrap.classList.add('editing');
       $('#nback', el).onclick = async () => { if (dirty) await save(); wrap.classList.remove('editing'); cur = null; drawList(); };
       $('#nt', el).oninput = touch;
@@ -180,7 +188,14 @@ VIEWS.notepad = {
         drawItems([...collect().items, { id: uid(), text: v, done: false }]); $('#nai', el).value = ''; touch();
       };
       $$('[data-f]', el).forEach((b) => (b.onclick = () => fmt(b.dataset.f)));
-      $('#nsave', el).onclick = () => save(true);
+      $('#nsave', el).onclick = async () => {
+        if (!cur.ro) return save(true);
+        try {
+          const f = collect(), nid = uid();
+          await S.st.db.collection('notes').doc(nid).set({ ...f, title: (f.title || 'Untitled') + ' (my copy)', kind: 'note', rev: 1, seat: S.me.seat, at: Date.now(), editedSeat: S.me.seat, editedAt: Date.now() });
+          toast('Saved as your own note'); const mineN = allNotes().find((x) => x.id === nid); if (mineN) open(mineN);
+        } catch (e) { toast(errText(e), 'err'); }
+      };
       const del = $('#ndel', el);
       if (del) del.onclick = async () => {
         if (!cur || cur.isNew) return;
@@ -217,6 +232,7 @@ VIEWS.notepad = {
       });
     });
     const save = async (explicit = false) => {
+      if (cur && cur.ro) return;
       clearTimeout(timer);
       if (!cur || saving || conflictOpen) return;
       if (!dirty && !explicit) return;

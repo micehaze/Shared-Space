@@ -16,6 +16,3 @@ android/local.properties
 android/app/src/main/assets/www/vendor/
 .idea/
 *.iml
-
-**/local.properties
-**/.gradle/

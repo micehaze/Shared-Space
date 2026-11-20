@@ -170,13 +170,25 @@ VIEWS.kundlis = {
     const vis = (x) => { const k = kundaliOf(x); return k && !k.stub; };
     if (!this.tab) this.auto = true;
     try { this.style = localStorage.getItem('enko.chartStyle') || 'north'; } catch {}
-    el.innerHTML = `${pageHead('Our Kundlis', 'Birth charts calculated from date, time and place — plus the moments that shaped you.')}
+    const mode = () => { try { return localStorage.getItem('vs.astro') === 'western' ? 'western' : 'vedic'; } catch { return 'vedic'; } };
+    el.innerHTML = `${pageHead('Our Charts', 'Your birth charts, each other’s charts and your compatibility — in Vedic or European astrology.')}
+      <div class="seg astro-sw" role="group" aria-label="Astrology style" id="kstyle"></div>
       <div class="ktabs" role="group" aria-label="Profile" id="ktabs"></div><div id="kbody"></div>`;
     const draw = () => {
+      const m = mode();
       if (this.auto || !this.tab) this.tab = vis('A') && vis('B') ? 'pair' : S.me.seat;
-      $('#ktabs', el).innerHTML = [['pair', 'Compatibility'], ['A', nameOf('A')], ['B', nameOf('B')], ['shared', 'Our timeline']].map(([k, l]) => `<button data-k="${k}" aria-pressed="${k === this.tab}">${esc(l)}</button>`).join('');
-      $$('[data-k]', el).forEach((b) => (b.onclick = () => { this.tab = b.dataset.k; this.auto = false; this.sel = ''; draw(); }));
+      $('#kstyle', el).innerHTML = [['vedic', 'Vedic · Kundli'], ['western', 'European · Natal chart']].map(([k, l]) => `<button data-astro="${k}" aria-pressed="${k === m}">${l}</button>`).join('');
+      $$('[data-astro]', el).forEach((b) => (b.onclick = () => { try { localStorage.setItem('vs.astro', b.dataset.astro); } catch {} this.sel = ''; draw(); }));
+      $('#ktabs', el).innerHTML = [['pair', m === 'western' ? 'Synastry' : 'Compatibility'], ['A', nameOf('A')], ['B', nameOf('B')], ['shared', 'Our timeline']].map(([k, l]) => `<button data-k="${k}" aria-pressed="${k === this.tab}">${esc(l)}</button>`).join('');
+      $$('[data-k]', el).forEach((b) => (b.onclick = () => { this.tab = b.dataset.k; this.auto = false; this.sel = ''; NV.WV.selB = ''; draw(); }));
       const box = $('#kbody', el);
+      if (m === 'western') {
+        box.innerHTML = NV.WV.render();
+        this.bind(box);
+        NV.WV.bindW(box);
+        hydrate(box);
+        return;
+      }
       const k = this.tab === 'A' || this.tab === 'B' ? kundaliOf(this.tab) : null;
       const full = k && !k.stub;
       box.innerHTML = this.tab === 'shared' ? this.timelineHtml('shared')
@@ -190,6 +202,7 @@ VIEWS.kundlis = {
     this.draw = draw;
     draw();
     getEngine();
+    NV.WV.useEngine();
     this.off = onData((k) => ['profiles', 'events', 'members', 'names', 'mine'].includes(k) && draw());
   },
   unmount() { this.off && this.off(); },
@@ -315,7 +328,7 @@ VIEWS.kundlis = {
           ${e.description ? `<p>${esc(e.description)}</p>` : ''}
           ${(e.tags || []).length ? `<div class="tags">${e.tags.map((t) => `<span class="pill cat">${esc(t)}</span>`).join('')}</div>` : ''}
           ${(e.att || []).length ? `<div class="att">${e.att.map((a) => /^image\//.test(a.type) ? `<img data-asset="${esc(a.id)}" alt="${esc(a.name)}" data-big="${esc(a.id)}" loading="lazy">` : `<a data-asset="${esc(a.id)}" target="_blank" rel="noopener">${esc(a.name)}</a>`).join('')}</div>` : ''}
-          ${e.scope === 'shared' || e.scope === S.me.seat ? `<div class="acts"><button class="btn ghost sm" data-eev="${esc(e.id)}">${icon('edit')}Edit</button></div>` : ''}
+          ${(e.seat || e.scope) === S.me.seat ? `<div class="acts"><button class="btn ghost sm" data-eev="${esc(e.id)}">${icon('edit')}Edit</button></div>` : ''}
           <div class="hint" style="font-size:12px">Added by ${esc(nameOf(e.seat))}</div></article>`).join('')}</div>`}`;
   },
   bind(box) {
@@ -403,7 +416,7 @@ function openBirthWizard(existing) {
   const shareDefault = existing ? existing.shared : true;
   const settings = existing ? existing.settings : { ayanamsa: 'lahiri', houses: 'whole', node: 'mean' };
   openModal({
-    title: existing ? 'Edit birth details' : 'Create your Kundali', wide: true, label: 'Birth details',
+    title: existing ? 'Edit birth details' : 'Create your birth chart', wide: true, label: 'Birth details',
     body: `<ol class="steps" aria-label="Steps"><li data-s="1">Date &amp; time</li><li data-s="2">Birthplace</li><li data-s="3">Review</li><li data-s="4">Your chart</li></ol><div id="wz"></div>`,
     foot: `<button class="btn ghost left" data-back>Back</button><button class="btn" data-next>Continue</button>`,
     onClose: () => { map && map.destroy(); searchCtl && searchCtl.abort(); },

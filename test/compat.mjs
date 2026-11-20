@@ -1,5 +1,6 @@
 // Two Kundalis → automatic compatibility, explained positions, forecasts, section backdrops
 import { createRequire } from 'node:module';
+import { asPerson } from './pin-helper.mjs';
 import http from 'node:http';
 import { readFileSync, mkdirSync } from 'node:fs';
 const require = createRequire('/opt/npm-tools/node_modules/');
@@ -32,7 +33,7 @@ const make = async (name, date, time, city) => {
 };
 await p.goto(base + '#inbox'); await p.waitForSelector('.demo-bar');
 await make('Anya', '1999-05-14', '07:25', 'Moscow');
-await p.click('.demo-bar [data-p="B"]'); await W(500);
+await asPerson(p, 'B'); await W(500);
 await make('Rohan', '1996-02-02', '20:40', 'Mumbai');
 // fresh visit → compatibility first
 {
@@ -48,13 +49,16 @@ console.log('kootas:', await p.$$eval('.koota summary', (a) => a.map((e) => e.in
 await p.click('.koota >> nth=7'); await W(100);
 await p.$eval('.wheel', (e) => e.scrollIntoView({ block: 'start' })); await W(150); await shot('02-compat-map');
 await p.$eval('.kgrid2.two', (e) => e.scrollIntoView({ block: 'start' })); await W(150); await shot('03-compat-overlay');
+await p.$$eval('details.koota', (a) => a.forEach((d) => (d.open = /Bhakoot|Gana/.test(d.textContent.slice(0, 40)))));
+await (await p.$('details.koota[open]')).screenshot({ path: OUT + '/05-koota-life.png' });
+const lv = await p.$('.panel:has(h3:text-matches("in practice"))'); await lv.$eval('details', (d) => (d.open = true)); await lv.screenshot({ path: OUT + '/05-life-vedic.png' });
 await p.click('[data-groom="B"]'); await W(300);
 console.log('swapped score:', await p.$eval('.gm-score', (e) => e.innerText.replace(/\s+/g, ' ')));
 // explained
 await p.click('#ktabs [data-k="A"]'); await W(300);
 await p.click('[data-sub="explain"]'); await W(300); await shot('04-explained');
 const nRd = await p.$$eval('.rd', (a) => a.length); console.log('reading sections:', nRd);
-const txt = await p.$eval('.rd[open] .rd-b', (e) => e.innerText); console.log('lagna reading words:', txt.split(/\s+/).length);
+const txt = await p.$eval('.rd .rd-b', (e) => e.textContent); console.log('lagna reading words:', txt.split(/\s+/).length);
 await p.click('.rd:nth-of-type(6) summary').catch(() => {});
 // forecast
 await p.click('[data-sub="forecast"]'); await W(400); await shot('05-today');

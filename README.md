@@ -4,7 +4,7 @@ A private space for two, kept on one phone: shared inbox, gallery, document lock
 notepad (with photos and coloured text), contacts, special dates and calculated
 Vedic Kundalis. 2000s Vice City look. Nothing is uploaded anywhere.
 
-Kundlis: once both charts are created and shared, **Compatibility** opens first —
+Kundlis and Natal charts: once both charts are created and shared, **Compatibility** opens first —
 Ashtakoota Guna Milan (36 points, with selectable traditional roles), Manglik check,
 a two-ring compatibility map, each other's planets in your houses, and every position
 side by side. Each person also gets **Explained** (Lagna, Rashi, Nakshatra, Pada, all
